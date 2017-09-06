@@ -19,10 +19,12 @@ import com.wavesplatform.mining.Miner
 import com.wavesplatform.network.{NetworkServer, PeerDatabaseImpl, PeerInfo, UPnP}
 import com.wavesplatform.settings._
 import com.wavesplatform.utils.forceStopApplication
+import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import io.netty.channel.Channel
 import io.netty.channel.group.DefaultChannelGroup
 import io.netty.util.concurrent.GlobalEventExecutor
 import kamon.Kamon
+import org.flywaydb.core.Flyway
 import scorex.account.AddressScheme
 import scorex.api.http._
 import scorex.api.http.alias.{AliasApiRoute, AliasBroadcastApiRoute}
@@ -232,6 +234,16 @@ object Application extends ScorexLogging {
     val config = readConfig(args.headOption)
     val settings = WavesSettings.fromConfig(config)
     Kamon.start(config)
+
+    val hc = new HikariConfig()
+    hc.setDriverClassName("org.h2.Driver")
+    hc.setJdbcUrl(s"jdbc:h2:${settings.directory}/h2db/data")
+    hc.setUsername("sa")
+    hc.setPassword("sa")
+    val hds = new HikariDataSource(hc)
+    val flyway = new Flyway
+    flyway.setDataSource(hds)
+    flyway.migrate()
 
     RootActorSystem.start("wavesplatform", config) { actorSystem =>
       configureLogging(settings)
