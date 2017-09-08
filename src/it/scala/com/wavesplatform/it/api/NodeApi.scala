@@ -5,7 +5,7 @@ import java.util.concurrent.TimeoutException
 
 import com.wavesplatform.it.util._
 import com.wavesplatform.matcher.api.CancelOrderRequest
-import com.wavesplatform.state2.Portfolio
+import com.wavesplatform.state2.WavesBalance
 import io.netty.util.{HashedWheelTimer, Timer}
 import org.asynchttpclient.Dsl.{get => _get, post => _post}
 import org.asynchttpclient._
@@ -20,7 +20,6 @@ import scorex.api.http.PeersApiRoute.{ConnectReq, connectFormat}
 import scorex.transaction.assets.exchange.Order
 import scorex.utils.{LoggerFacade, ScorexLogging}
 import scorex.waves.http.RollbackParams
-import scorex.waves.http.DebugApiRoute.portfolioFormat
 
 import scala.compat.java8.FutureConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -280,7 +279,7 @@ trait NodeApi {
 
   def debugPortfoliosFor(address: String, considerUnspent: Boolean) = {
     getWihApiKey(s"/debug/portfolios/$address?considerUnspent=$considerUnspent")
-  }.as[Portfolio]
+  }.as[WavesBalance]
 
 }
 

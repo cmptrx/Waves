@@ -86,12 +86,12 @@ class UtxPool(time: Time,
     }
   }
 
-  def portfolio(addr: Address): Portfolio = read { implicit l =>
+  def portfolio(addr: Address): Portfolio = ??? /*read { implicit l =>
     val base = stateReader.accountPortfolio(addr)
     val foundInUtx = pessimisticPortfolios().getAggregated(addr)
 
     Monoid.combine(base, foundInUtx)
-  }
+  }*/
 
   def all(): Seq[Transaction] = read { implicit l =>
     transactions().values.toSeq.sorted(TransactionsOrdering.InUTXPool)

@@ -10,8 +10,8 @@ import akka.http.scaladsl.server.Route
 import com.wavesplatform.UtxPool
 import com.wavesplatform.network.{LocalScoreChanged, PeerDatabase, PeerInfo, _}
 import com.wavesplatform.settings.RestAPISettings
-import com.wavesplatform.state2.{ByteStr, LeaseInfo, Portfolio}
 import com.wavesplatform.state2.reader.StateReader
+import com.wavesplatform.state2.{ByteStr, LeaseInfo, Portfolio}
 import io.netty.channel.Channel
 import io.netty.channel.group.ChannelGroup
 import io.swagger.annotations._
@@ -25,7 +25,6 @@ import scorex.wallet.Wallet
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
 import scala.util.control.NonFatal
 import DebugApiRoute._
 import com.wavesplatform.mining.Miner
@@ -107,8 +106,8 @@ case class DebugApiRoute(settings: RestAPISettings,
       Address.fromString(rawAddress) match {
         case Left(_) => complete(InvalidAddress)
         case Right(address) =>
-          val portfolio = if (considerUnspent) utxStorage.portfolio(address) else stateReader.accountPortfolio(address)
-          complete(Json.toJson(portfolio))
+//          val portfolio = if (considerUnspent) utxStorage.portfolio(address) else stateReader.accountPortfolio(address)
+          complete(Json.toJson(""))
       }
     }
   }

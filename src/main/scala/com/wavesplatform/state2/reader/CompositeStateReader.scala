@@ -1,7 +1,5 @@
 package com.wavesplatform.state2.reader
 
-import java.util.concurrent.locks.ReentrantReadWriteLock
-
 import cats.implicits._
 import cats.kernel.Monoid
 import com.wavesplatform.state2._
@@ -11,17 +9,12 @@ import scorex.transaction.lease.LeaseTransaction
 
 class CompositeStateReader(inner: StateReader, blockDiff: BlockDiff) extends StateReader {
 
-  def synchronizationToken: ReentrantReadWriteLock = inner.synchronizationToken
-
   private val txDiff = blockDiff.txsDiff
 
   override def transactionInfo(id: ByteStr): Option[(Int, Transaction)] =
     txDiff.transactions.get(id)
       .map(t => (t._1, t._2))
       .orElse(inner.transactionInfo(id))
-
-  override def accountPortfolio(a: Address): Portfolio =
-    inner.accountPortfolio(a).combine(txDiff.portfolios.get(a).orEmpty)
 
   override def assetInfo(id: ByteStr): Option[AssetInfo] = (inner.assetInfo(id), txDiff.issuedAssets.get(id)) match {
     case (None, None) => None
@@ -38,6 +31,10 @@ class CompositeStateReader(inner: StateReader, blockDiff: BlockDiff) extends Sta
       fromDiff ++ inner.accountTransactionIds(a, limit - fromDiff.size) // fresh head ++ stale tail
     }
   }
+
+  override def wavesBalance(a: Address) = ???
+
+  override def assetBalance(a: Address, assetId: ByteStr) = ???
 
   override def snapshotAtHeight(acc: Address, h: Int): Option[Snapshot] =
     blockDiff.snapshots.get(acc).flatMap(_.get(h)).orElse(inner.snapshotAtHeight(acc, h))
@@ -72,17 +69,15 @@ class CompositeStateReader(inner: StateReader, blockDiff: BlockDiff) extends Sta
 object CompositeStateReader {
 
   class Proxy(val inner: StateReader, blockDiff: () => BlockDiff) extends StateReader {
+    override def wavesBalance(a: Address): WavesBalance = ???
 
-    override def synchronizationToken: ReentrantReadWriteLock = inner.synchronizationToken
+    override def assetBalance(a: Address, assetId: ByteStr): Long = ???
 
     override def paymentTransactionIdByHash(hash: ByteStr): Option[ByteStr] =
       new CompositeStateReader(inner, blockDiff()).paymentTransactionIdByHash(hash)
 
     override def aliasesOfAddress(a: Address): Seq[Alias] =
       new CompositeStateReader(inner, blockDiff()).aliasesOfAddress(a)
-
-    override def accountPortfolio(a: Address): Portfolio =
-      new CompositeStateReader(inner, blockDiff()).accountPortfolio(a)
 
     override def accountTransactionIds(a: Address, limit: Int): Seq[ByteStr] =
       new CompositeStateReader(inner, blockDiff()).accountTransactionIds(a, limit)

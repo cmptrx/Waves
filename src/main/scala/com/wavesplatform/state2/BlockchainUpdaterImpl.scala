@@ -48,7 +48,7 @@ class BlockchainUpdaterImpl private(persisted: StateWriter with StateReader,
 
     ranges(persistFrom, persistUpTo, minimumInMemoryDiffSize).foreach { case (head, last) =>
       val diffToBePersisted = unsafeDiffByRange(persisted, head, last)
-      persisted.applyBlockDiff(diffToBePersisted)
+      persisted.applyBlockDiff(diffToBePersisted, ???, 0)
     }
 
     bottomMemoryDiff.set(unsafeDiffByRange(persisted, persisted.height + 1, historyWriter.height() + 1))
@@ -56,16 +56,10 @@ class BlockchainUpdaterImpl private(persisted: StateWriter with StateReader,
     logHeights("State rebuild finished")
   }
 
-  override def processBlock(block: Block): Either[ValidationError, Unit] = write { implicit l =>
-    if (topMemoryDiff().heightDiff >= minimumInMemoryDiffSize) {
-      persisted.applyBlockDiff(bottomMemoryDiff())
-      bottomMemoryDiff.set(topMemoryDiff())
-      topMemoryDiff.set(BlockDiff.empty)
-    }
-    historyWriter.appendBlock(block)(BlockDiffer.fromBlock(settings, currentPersistedBlocksState, historyWriter.lastBlock.map(_.timestamp))(block)).map { newBlockDiff =>
-      topMemoryDiff.set(Monoid.combine(topMemoryDiff(), newBlockDiff))
-    }.map(_ => log.trace(s"Block ${block.uniqueId} appended. New height: ${historyWriter.height()}, new score: ${historyWriter.score()}"))
-  }
+  override def processBlock(block: Block): Either[ValidationError, Unit] =
+    BlockDiffer
+      .fromBlock(settings, currentPersistedBlocksState, historyWriter.lastBlock.map(_.timestamp))(block)
+        .map(b => persisted.applyBlockDiff(b, ???, 0))
 
   override def removeAfter(blockId: ByteStr): Either[ValidationError, Seq[Transaction]] = write { implicit l =>
     historyWriter.heightOf(blockId) match {

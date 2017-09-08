@@ -17,9 +17,9 @@ object BalanceDiffValidation {
 
     val changedAccounts = d.portfolios.keySet
     val positiveBalanceErrors: Map[Address, String] = changedAccounts.flatMap(acc => {
-
-      val oldPortfolio = s.accountPortfolio(acc)
       val portfolioDiff = d.portfolios(acc)
+      val swb = s.wavesBalance(acc)
+      val oldPortfolio = Portfolio(swb.balance, swb.leaseInfo, portfolioDiff.assets.keys.map(aid => aid -> s.assetBalance(acc, aid)).toMap)
       val newPortfolio = oldPortfolio.combine(portfolioDiff)
 
       val err = if (newPortfolio.balance < 0) {

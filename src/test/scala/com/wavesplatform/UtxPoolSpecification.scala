@@ -4,6 +4,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 
 import com.wavesplatform.history.{HistoryWriterImpl, StorageFactory}
 import com.wavesplatform.settings.{BlockchainSettings, FeeSettings, FeesSettings, FunctionalitySettings, UtxSettings}
+import com.wavesplatform.state2.Portfolio
 import org.scalacheck.Gen._
 import org.scalacheck.{Gen, Shrink}
 import org.scalamock.scalatest.MockFactory
@@ -35,7 +36,7 @@ class UtxPoolSpecification extends FreeSpec
   private def mkState(senderAccount: Address, senderBalance: Long) = {
     val genesisSettings = TestHelpers.genesisSettings(Map(senderAccount -> senderBalance))
     val (history, _, state, bcu) =
-      StorageFactory(BlockchainSettings(None, None, None, 'T', 5, FunctionalitySettings.TESTNET, genesisSettings)).get
+      StorageFactory(BlockchainSettings(None, None, None, 'T', 5, FunctionalitySettings.TESTNET, genesisSettings), ???).get
 
     bcu.processBlock(Block.genesis(genesisSettings).right.get)
 
@@ -175,7 +176,7 @@ class UtxPoolSpecification extends FreeSpec
 
     "portfolio" - {
       "returns a count of assets from the state if there is no transaction" in forAll(emptyUtxPool) { case (sender, state, utxPool) =>
-        val basePortfolio = state.accountPortfolio(sender)
+        val basePortfolio: Portfolio = ??? // state.accountPortfolio(sender)
 
         utxPool.size shouldBe 0
         val utxPortfolio = utxPool.portfolio(sender)
@@ -184,7 +185,7 @@ class UtxPoolSpecification extends FreeSpec
       }
 
       "taking into account unconfirmed transactions" in forAll(withValidPayments) { case (sender, state, utxPool, _, _) =>
-        val basePortfolio = state.accountPortfolio(sender)
+        val basePortfolio: Portfolio = ??? //state.accountPortfolio(sender)
 
         utxPool.size should be > 0
         val utxPortfolio = utxPool.portfolio(sender)
