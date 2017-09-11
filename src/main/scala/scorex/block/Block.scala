@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import cats._
 import com.google.common.primitives.{Bytes, Ints, Longs}
 import com.wavesplatform.settings.GenesisSettings
-import com.wavesplatform.state2.{ByteStr, Diff}
+import com.wavesplatform.state2.{ByteStr, Diff, LeaseInfo, Portfolio}
 import play.api.libs.json.{JsObject, Json}
 import scorex.account.{Address, PrivateKeyAccount, PublicKeyAccount}
 import scorex.block.fields.FeaturesBlockField
@@ -79,7 +79,17 @@ case class Block(timestamp: Long,
     .ensuring(_ > 0) // until we make smart-constructor validate consensusData.baseTarget to be positive
 
   lazy val feesDistribution: Diff = {
-    ???
+    val recipient = signerData.generator.toAddress
+    val fees = transactionData.foldLeft(Monoid[Portfolio].empty) {
+      case (d, tx) =>
+        val (feeAsset, feeAmount) = tx.assetFee
+        val newPortfolio = feeAsset match {
+          case Some(feeAssetId) => Portfolio(0, LeaseInfo.empty, Map(feeAssetId -> feeAmount))
+          case None => Portfolio(feeAmount, LeaseInfo.empty, Map.empty)
+        }
+        Monoid.combine(d, newPortfolio)
+    }
+    new Diff(Map.empty, Map(recipient -> fees), Map.empty, Map.empty, Map.empty, Map.empty, Map.empty)
   }
 
   override lazy val signatureValid: Boolean = EllipticCurveImpl.verify(signerData.signature.arr, bytesWithoutSignature, signerData.generator.publicKey)
