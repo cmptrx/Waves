@@ -40,7 +40,7 @@ class DebugRouteSpec
 
     forAll(Gen.chooseNum(0, 20).flatMap(n => Gen.listOfN(n, portfolioGen))) { portfolios =>
       val portfolioMap = portfolios.toMap
-      (state.accountPortfolios _).expects().returning(portfolioMap).once()
+//      (state.accountPortfolios _).expects().returning(portfolioMap).once()
 
       Get(routePath("/state")) ~> route ~> check {
         responseAs[JsObject] shouldEqual JsObject(portfolios.map {
@@ -53,7 +53,7 @@ class DebugRouteSpec
   routePath("/info") in {
     forAll(Gen.posNum[Int]) { height =>
       (state.height _).expects().returning(height).once()
-      (state.accountPortfolios _).expects().returning(Map.empty).once()
+//      (state.accountPortfolios _).expects().returning(Map.empty).once()
       Get(routePath("/info")) ~> route ~> check {
         responseAs[JsObject] should have(
           "stateHeight" -> JsNumber(height),

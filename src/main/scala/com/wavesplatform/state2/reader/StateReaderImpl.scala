@@ -8,11 +8,16 @@ import scorex.transaction.{Transaction, TransactionParser}
 import scala.collection.JavaConverters._
 
 class StateReaderImpl(p: StateStorage) extends StateReader {
-  override def leaseInfo(leaseId: ByteStr) = ???
+
+  override def leaseInfo(a: Address) = ???
+
+  override def leaseDetails(leaseId: ByteStr) = ???
 
   override def wavesBalance(a: Address) = ???
 
-  override def assetBalance(a: Address, assetId: ByteStr) = ???
+  override def assetBalance(a: Address) = ???
+
+  override def nonZeroLeaseBalances = ???
 
   override def transactionInfo(id: ByteStr): Option[(Int, Transaction)] = {
     Option(p.transactions.get(id)).map {
@@ -53,9 +58,7 @@ class StateReaderImpl(p: StateStorage) extends StateReader {
       .map(b => Address.fromBytes(b.arr).explicitGet())
   }
 
-  override def accountPortfolios: Map[Address, Portfolio] = ???
-
-  override def activeLeases(): Seq[ByteStr] = {
+  override def activeLeases: Seq[ByteStr] = {
     p.leaseState
       .asScala
       .collect { case (leaseId, isActive) if isActive => leaseId }

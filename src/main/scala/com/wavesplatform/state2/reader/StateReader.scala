@@ -10,15 +10,16 @@ import scorex.utils.ScorexLogging
 import scala.util.Right
 
 trait StateReader {
-
-  def accountPortfolios: Map[Address, Portfolio]
-
   def transactionInfo(id: ByteStr): Option[(Int, Transaction)]
 
   def containsTransaction(id: ByteStr): Boolean
 
   def wavesBalance(a: Address): WavesBalance
-  def assetBalance(a: Address, assetId: ByteStr): Long
+  def assetBalance(a: Address): Map[ByteStr, Long]
+
+  def leaseInfo(a: Address): LeaseInfo
+
+  def nonZeroLeaseBalances: Map[Address, LeaseInfo]
 
   def assetInfo(id: ByteStr): Option[AssetInfo]
   def assetDescription(id: ByteStr): Option[AssetDescription]
@@ -33,9 +34,9 @@ trait StateReader {
 
   def resolveAlias(a: Alias): Option[Address]
 
-  def leaseInfo(leaseId: ByteStr): Option[LeaseInfo]
+  def leaseDetails(leaseId: ByteStr): Option[LeaseDetails]
 
-  def activeLeases(): Seq[ByteStr]
+  def activeLeases: Seq[ByteStr]
 
   def lastUpdateHeight(acc: Address): Option[Int]
 
@@ -85,9 +86,7 @@ object StateReader {
 
     def balanceAtHeight(acc: Address, height: Int): Long = ???
 
-    def accountPortfoliosHash: Int = {
-      Hash.accountPortfolios(s.accountPortfolios)
-    }
+    def accountPortfoliosHash: Int = 0
   }
 
 }

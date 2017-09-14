@@ -43,8 +43,8 @@ class LeasePatchTest extends PropSpec with PropertyChecks with GeneratorDrivenPr
           TestBlock.create(Seq.empty)),
           TestBlock.create(Seq(lease2)),
           settings) { case (totalDiff, newState) =>
-          newState.activeLeases() shouldBe empty
-          newState.accountPortfolios.map(_._2.leaseInfo).foreach(_ shouldBe LeaseInfo.empty)
+          newState.activeLeases shouldBe empty
+//          newState.accountPortfolios.map(_._2.leaseInfo).foreach(_ shouldBe LeaseInfo.empty)
         }
     }
   }
